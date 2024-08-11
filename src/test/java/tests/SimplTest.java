@@ -116,11 +116,9 @@ public class SimplTest {
 
 }
 
-
 @Test
     public void  UpdatingUserPassword(){
 
-    Random random = new Random();
     int randomNamber = Math.abs(random.nextInt());
 
 
@@ -150,6 +148,40 @@ public class SimplTest {
     }
 
 
+
+@Test
+    public void DeletUser(){
+
+        Random random = new Random();
+        int randomNamber = Math.abs(random.nextInt());
+
+        UserRoot user = UserRoot.builder()
+                .login("deeerr" + randomNamber)
+                .pass("23ededasdas")
+                .build();
+
+        given().contentType(ContentType.JSON)
+                .body(user)
+                .post("http://85.192.34.140:8080/api/signup")
+                .then().log().all()
+                .statusCode(201)
+                .extract()
+                .jsonPath().getObject("info", Info.class);
+
+        JwtAuthData authData = new JwtAuthData(user.getLogin(), user.getPass());
+
+        String token = given().contentType(ContentType.JSON)
+                .body(authData)
+                .post("http://85.192.34.140:8080/api/login")
+                .then().log().all()
+                .statusCode(200)
+                .extract().jsonPath().getString("token");
+
+        given().auth().oauth2(token)
+                .delete("http://85.192.34.140:8080/api/user")
+                .then().log().all()
+                .statusCode(200);
+    }
 
 
 }
