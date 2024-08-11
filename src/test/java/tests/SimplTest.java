@@ -7,6 +7,8 @@ import models.UserRoot;
 import org.example.Main;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 import static io.restassured.RestAssured.given;
@@ -119,14 +121,13 @@ public class SimplTest {
 @Test
     public void  UpdatingUserPassword(){
 
+    Random random = new Random();
     int randomNamber = Math.abs(random.nextInt());
-
 
     UserRoot user = UserRoot.builder()
             .login("deeerr" + randomNamber)
             .pass("23ededasdas")
             .build();
-
 
     given().contentType(ContentType.JSON)
             .body(user)
@@ -135,6 +136,7 @@ public class SimplTest {
             .statusCode(201)
             .extract()
             .jsonPath().getObject("info", Info.class);
+
     JwtAuthData authData = new JwtAuthData(user.getLogin(), user.getPass());
 
     String token = given().contentType(ContentType.JSON)
@@ -144,7 +146,15 @@ public class SimplTest {
             .statusCode(200)
             .extract().jsonPath().getString("token");
 
+    Map<String,String> password = new HashMap<>();
+    password.put("password", "234234234");
 
+    given().contentType(ContentType.JSON)
+            .auth().oauth2(token)
+            .body(password)
+            .put("http://85.192.34.140:8080/api/user")
+            .then().log().all()
+            .statusCode(200);
     }
 
 
@@ -181,7 +191,8 @@ public class SimplTest {
                 .delete("http://85.192.34.140:8080/api/user")
                 .then().log().all()
                 .statusCode(200);
-    }
 
+
+    }
 
 }
