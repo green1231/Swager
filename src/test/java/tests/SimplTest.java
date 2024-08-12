@@ -5,6 +5,7 @@ import models.Info;
 import models.JwtAuthData;
 import models.UserRoot;
 import org.example.Main;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -15,7 +16,7 @@ import static io.restassured.RestAssured.given;
 
 public class SimplTest {
 
-    private static Random random;
+    private static Random random = new Random();
 
     @Test  // В логах указанно это - "games": []?
 
@@ -31,7 +32,7 @@ public class SimplTest {
                 .build();
 
 
-        given().contentType(ContentType.JSON)
+       Info info = given().contentType(ContentType.JSON)
                 .body(user)
                 .post("http://85.192.34.140:8080/api/signup")
                 .then().log().all()
@@ -39,6 +40,9 @@ public class SimplTest {
                 .extract()
                 .jsonPath().getObject("info", Info.class);
 
+        Assertions.assertEquals("success", info.getStatus());
+        Assertions.assertEquals("User created", info.getMessage());
+        ;
 
     }
 @Test
@@ -52,6 +56,7 @@ public class SimplTest {
             .then().log().all()
             .statusCode(200)
             .extract().jsonPath().getString("token");
+  Assertions.assertNotNull(token);
 
     }
     @Test
@@ -80,7 +85,7 @@ public class SimplTest {
                 .then().log().all()
                 .statusCode(200)
                 .extract().jsonPath().getString("token");
-
+        Assertions.assertNotNull(token);
     }
     @Test
     public void positiveGetUserInfo(){
@@ -110,18 +115,20 @@ public class SimplTest {
                 .statusCode(200)
                 .extract().jsonPath().getString("token");
 
-        given().auth().oauth2(token)
+        UserRoot response = given().auth().oauth2(token)
                 .get("http://85.192.34.140:8080/api/user")
                 .then().log().all()
-                .statusCode(200);
-
+                .statusCode(200)
+                .extract().body().as(UserRoot.class);
+        Assertions.assertEquals(user.getLogin(), response.getLogin());
+        Assertions.assertEquals(user.getPass(), response.getPass());
 
 }
 
 @Test
-    public void  UpdatingUserPassword(){
+    public void  updatingUserPassword(){
 
-    Random random = new Random();
+    //Random random = new Random();
     int randomNamber = Math.abs(random.nextInt());
 
     UserRoot user = UserRoot.builder()
@@ -133,9 +140,7 @@ public class SimplTest {
             .body(user)
             .post("http://85.192.34.140:8080/api/signup")
             .then().log().all()
-            .statusCode(201)
-            .extract()
-            .jsonPath().getObject("info", Info.class);
+            .statusCode(201);
 
     JwtAuthData authData = new JwtAuthData(user.getLogin(), user.getPass());
 
@@ -146,21 +151,26 @@ public class SimplTest {
             .statusCode(200)
             .extract().jsonPath().getString("token");
 
+
     Map<String,String> password = new HashMap<>();
     password.put("password", "234234234");
 
-    given().contentType(ContentType.JSON)
+   Info info =  given().contentType(ContentType.JSON)
             .auth().oauth2(token)
             .body(password)
             .put("http://85.192.34.140:8080/api/user")
             .then().log().all()
-            .statusCode(200);
+            .statusCode(200)
+           .extract().jsonPath().getObject("info", Info.class);
+   Assertions.assertEquals("success", info.getStatus());
+   Assertions.assertEquals("User password successfully changed", info.getMessage());
+
     }
 
 
 
 @Test
-    public void DeletUser(){
+    public void deletUser(){
 
         Random random = new Random();
         int randomNamber = Math.abs(random.nextInt());
@@ -187,12 +197,14 @@ public class SimplTest {
                 .statusCode(200)
                 .extract().jsonPath().getString("token");
 
-        given().auth().oauth2(token)
+       Info info = given().auth().oauth2(token)
                 .delete("http://85.192.34.140:8080/api/user")
                 .then().log().all()
-                .statusCode(200);
-
-
+                .statusCode(200)
+               .extract().jsonPath().getObject("info", Info.class);
+       Assertions.assertEquals("success", info.getStatus());
+       Assertions.assertEquals("User successfully deleted", info.getMessage());
     }
+
 
 }
