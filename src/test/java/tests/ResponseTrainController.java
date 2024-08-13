@@ -49,7 +49,7 @@ public class ResponseTrainController {
 @Test
     public void redirectsSpecificAddressReturnsStatusCode301(){
 
-       int stausCode  = given()
+       int statusCode  = given()
                .redirects()
                .follow(false)
                .when()
@@ -57,7 +57,7 @@ public class ResponseTrainController {
                .then().log().all()
                .extract().statusCode();
 
-       Assertions.assertEquals(301, stausCode);
+       Assertions.assertEquals(301, statusCode);
 
 
 }
