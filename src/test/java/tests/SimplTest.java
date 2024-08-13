@@ -202,6 +202,7 @@ public class SimplTest {
                 .then().log().all()
                 .statusCode(200)
                .extract().jsonPath().getObject("info", Info.class);
+
        Assertions.assertEquals("success", info.getStatus());
        Assertions.assertEquals("User successfully deleted", info.getMessage());
     }

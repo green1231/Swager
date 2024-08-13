@@ -17,7 +17,6 @@ public class DlcsItem{
 
 	@JsonProperty("similarDlc")
 	private SimilarDlc similarDlc;
-
 	@JsonProperty("price")
 	private int price;
 
