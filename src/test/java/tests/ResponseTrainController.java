@@ -3,11 +3,13 @@ package tests;
 import io.restassured.http.ContentType;
 
 
+import io.restassured.response.Response;
 import models.carsBrands.ResponseItem;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
 
@@ -24,7 +26,30 @@ public class ResponseTrainController {
               .then().log().all()
               .extract().body().jsonPath().getList("", ResponseItem.class);
 
-      carsBrand.stream().forEach(x-> Assertions.assertEquals("brand", x.getBrand()));
+      String bmwBrand = "bmw";
+//ищем в списке бренд bmw
+        boolean isBmwExist = carsBrand.stream()
+                .anyMatch(x -> x.getBrand().equalsIgnoreCase(bmwBrand));
+//проверяем
+        Assertions.assertTrue(isBmwExist);
+
+//список бмв машин X серии
+        List<String> xSeries = carsBrand.stream()
+                .filter(x -> x.getBrand().equalsIgnoreCase(bmwBrand))
+                .findAny().orElseThrow(() -> new AssertionError("Машин " + bmwBrand + " нет в списке"))
+                .getModels().stream()
+                .filter(x -> x.startsWith("X")).toList();
+
+        Assertions.assertEquals(xSeries.size(), 5);
+
+        String carBrand = "Mercedes-Benz";
+
+        long carsCount = carsBrand.stream()
+                .filter(x -> x.getBrand().equalsIgnoreCase(carBrand))
+                .findAny().orElseThrow(() -> new AssertionError("Машин " + carBrand + " нет в списке"))
+                .getModels().size();
+
+        Assertions.assertEquals(carsCount, 58);
 
 
     }
@@ -49,15 +74,18 @@ public class ResponseTrainController {
 @Test
     public void redirectsSpecificAddressReturnsStatusCode301(){
 
-       int statusCode  = given()
+       Response response  = given()
                .redirects()
                .follow(false)
                .when()
                .get("http://85.192.34.140:8080/api/easy/redirect")
                .then().log().all()
-               .extract().statusCode();
+               .extract().response();
+       String location = response.getHeader("Location");
+       int statusCode = response.getStatusCode();
 
        Assertions.assertEquals(301, statusCode);
+       Assertions.assertEquals("https://www.youtube.com/@net_vlador", location);
 
 
 }

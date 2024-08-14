@@ -1,6 +1,14 @@
 package models.keysNums;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 
 public class KeyNumsRoot{
 
@@ -25,73 +33,5 @@ public class KeyNumsRoot{
 	@JsonProperty("что то на русском")
 	private String rus;
 
-	public void setJsonMember1(String jsonMember1){
-		this.jsonMember1 = jsonMember1;
-	}
 
-	public String getJsonMember1(){
-		return jsonMember1;
-	}
-
-	public void setJsonMember2(String jsonMember2){
-		this.jsonMember2 = jsonMember2;
-	}
-
-	public String getJsonMember2(){
-		return jsonMember2;
-	}
-
-	public void setNumbersPow(NumbersPow numbersPow){
-		this.numbersPow = numbersPow;
-	}
-
-	public NumbersPow getNumbersPow(){
-		return numbersPow;
-	}
-
-	public void setTrue(boolean trues){
-		this.trues = true;
-	}
-
-	public boolean isTrue(){
-		return true;
-	}
-
-	public void setSingleQuotes(String singleQuotes){
-		this.singleQuotes = singleQuotes;
-	}
-
-	public String getSingleQuotes(){
-		return singleQuotes;
-	}
-
-	public void setBmwUsers(String bmwUsers){
-		this.bmwUsers = bmwUsers;
-	}
-
-	public String getBmwUsers(){
-		return bmwUsers;
-	}
-
-	public void set(String rus){
-		this. rus = rus;
-	}
-
-	public String get(){
-		return rus;
-	}
-
-	@Override
- 	public String toString(){
-		return 
-			"KeyNumsRoot{" + 
-			"1 = '" + jsonMember1 + '\'' + 
-			",_2 = '" + jsonMember2 + '\'' + 
-			",numbersPow = '" + numbersPow + '\'' + 
-			",true = '" + true + '\'' + 
-			",'single_quotes' = '" + singleQuotes + '\'' + 
-			",bmw:users = '" + bmwUsers + '\'' + 
-			",что то на русском = '" +  + '\'' + 
-			"}";
-		}
 }

@@ -4,7 +4,6 @@ import io.restassured.http.ContentType;
 import models.Info;
 import models.JwtAuthData;
 import models.UserRoot;
-import org.example.Main;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +13,7 @@ import java.util.Random;
 
 import static io.restassured.RestAssured.given;
 
-public class SimplTest {
+public class UserController {
 
     private static Random random = new Random();
 
