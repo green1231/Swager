@@ -4,10 +4,13 @@ import io.restassured.http.ContentType;
 import models.User.Info;
 import models.User.JwtAuthData;
 import models.User.UserRoot;
+import models.gamesNew.DlcsItem;
+import models.gamesNew.GamesRoot;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 import static io.restassured.RestAssured.given;
@@ -40,6 +43,9 @@ public class GameController {
                 .statusCode(200)
                 .extract().jsonPath().getString("token");
         Assertions.assertNotNull(token);
+
+
+
 
 
     }
