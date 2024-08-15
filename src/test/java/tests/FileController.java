@@ -1,6 +1,6 @@
 package tests;
 
-import models.Info;
+import models.User.Info;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

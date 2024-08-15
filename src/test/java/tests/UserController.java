@@ -1,9 +1,9 @@
 package tests;
 
 import io.restassured.http.ContentType;
-import models.Info;
-import models.JwtAuthData;
-import models.UserRoot;
+import models.User.Info;
+import models.User.JwtAuthData;
+import models.User.UserRoot;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
