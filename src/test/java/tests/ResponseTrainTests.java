@@ -4,16 +4,15 @@ import io.restassured.http.ContentType;
 
 
 import io.restassured.response.Response;
-import models.carsBrands.ResponseItem;
+import models.cars.ResponseItem;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
 
-public class ResponseTrainController {
+public class ResponseTrainTests {
 
 
 

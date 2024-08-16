@@ -1,6 +1,6 @@
 package tests;
 
-import models.User.Info;
+import models.users.Info;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -8,7 +8,7 @@ import java.io.File;
 
 import static io.restassured.RestAssured.given;
 
-public class FileController {
+public class FileTests {
 
     @Test
 

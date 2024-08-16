@@ -1,4 +1,4 @@
-package models.carsBrands;
+package models.cars;
 
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;

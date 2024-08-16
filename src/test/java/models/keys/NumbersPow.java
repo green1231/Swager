@@ -1,4 +1,4 @@
-package models.keysNums;
+package models.keys;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
