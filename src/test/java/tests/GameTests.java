@@ -205,7 +205,93 @@ public class GameTests {
         Assertions.assertEquals("DlC successfully changed", info.getMessage()) ;;
 
     }
+    @Test
+    public void deleteDlc(){
 
+        Random random = new Random();
+        int randomNamber = Math.abs(random.nextInt());
+
+        UserRoot user = UserRoot.builder()
+                .login("deeerr" + randomNamber)
+                .pass("23ededasdas")
+                .build();
+
+        given().contentType(ContentType.JSON)
+                .body(user)
+                .post("http://85.192.34.140:8080/api/signup")
+                .then().log().all()
+                .statusCode(201);
+
+        JwtAuthData authData = new JwtAuthData(user.getLogin(), user.getPass());
+
+        String token = given().contentType(ContentType.JSON)
+                .body(authData)
+                .post("http://85.192.34.140:8080/api/login")
+                .then().log().all()
+                .statusCode(200)
+                .extract().jsonPath().getString("token");
+
+        GamesRoot response = given().contentType(ContentType.JSON)
+                .auth().oauth2(token)
+                .body(GameGenerator.generateGameFullData())
+                .post("http://85.192.34.140:8080/api/user/games")
+                .then().log().all()
+                .extract().response().jsonPath().getObject("register_data", GamesRoot.class);
+
+        Info info = given().contentType(ContentType.JSON)
+                .auth().oauth2(token)
+                .body(GameGenerator.generateGameFullData().getDlcs())
+                .delete("http://85.192.34.140:8080/api/user/games/"+response.getGameId()+"/dlc")
+                .then().log().all()
+                .extract().jsonPath().getObject("info", Info.class);
+
+        Assertions.assertEquals("success", info.getStatus()) ;
+        Assertions.assertEquals("Game DLC successfully deleted", info.getMessage()) ;;
+
+    }
+    @Test
+    public void deleteGame (){
+        Random random = new Random();
+        int randomNamber = Math.abs(random.nextInt());
+
+        UserRoot user = UserRoot.builder()
+                .login("deeerr" + randomNamber)
+                .pass("23ededasdas")
+                .build();
+
+        given().contentType(ContentType.JSON)
+                .body(user)
+                .post("http://85.192.34.140:8080/api/signup")
+                .then().log().all()
+                .statusCode(201);
+
+        JwtAuthData authData = new JwtAuthData(user.getLogin(), user.getPass());
+
+        String token = given().contentType(ContentType.JSON)
+                .body(authData)
+                .post("http://85.192.34.140:8080/api/login")
+                .then().log().all()
+                .statusCode(200)
+                .extract().jsonPath().getString("token");
+
+        GamesRoot response = given().contentType(ContentType.JSON)
+                .auth().oauth2(token)
+                .body(GameGenerator.generateGameFullData())
+                .post("http://85.192.34.140:8080/api/user/games")
+                .then().log().all()
+                .extract().response().jsonPath().getObject("register_data", GamesRoot.class);
+
+        Info info = given().contentType(ContentType.JSON)
+                .auth().oauth2(token)
+                .body(response.getGameId())
+                .delete("http://85.192.34.140:8080/api/user/games/"+response.getGameId())
+                .then().log().all()
+                .extract().jsonPath().getObject("info", Info.class);
+
+        Assertions.assertEquals("success", info.getStatus()) ;
+        Assertions.assertEquals("Game successfully deleted", info.getMessage()) ;;
+
+}
 
 }
 
