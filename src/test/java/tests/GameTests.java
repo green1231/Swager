@@ -2,8 +2,13 @@ package tests;
 
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.github.javafaker.Faker;
+import io.restassured.RestAssured;
+import io.restassured.filter.log.RequestLoggingFilter;
+import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
 import io.restassured.mapper.ObjectMapper;
+import io.restassured.response.Response;
+import io.restassured.response.ValidatableResponse;
 import models.games.DlcsItem;
 import models.games.GamesRoot;
 import models.games.SimilarDlc;
@@ -12,6 +17,7 @@ import models.users.JwtAuthData;
 import models.users.UserRoot;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import utils.GameGenerator;
 
@@ -25,39 +31,49 @@ import static io.restassured.parsing.Parser.JSON;
 
 public class GameTests {
     private static final Faker faker = new Faker();
-    @Test
-    public void addGAme() {
-        Random random = new Random();
-        int randomNamber = Math.abs(random.nextInt());
+    Random random = new Random();
+    int randomNamber = Math.abs(random.nextInt());
+    @BeforeAll
+    static void setUp() {
 
-        UserRoot user = UserRoot.builder()
+        RestAssured.baseURI = "http://85.192.34.140:8080/api";
+        RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
+    }
+
+    private UserRoot getTestUser() {
+
+        return UserRoot.builder()
                 .login("deeerr" + randomNamber)
                 .pass("23ededasdas")
                 .build();
+    }
+
+    @Test
+    public void addGAme() {
 
         given().contentType(ContentType.JSON)
-                .body(user)
-                .post("http://85.192.34.140:8080/api/signup")
+                .body(getTestUser())
+                .post("/signup")
                 .then().log().all()
                 .statusCode(201);
 
-        JwtAuthData authData = new JwtAuthData(user.getLogin(), user.getPass());
+        JwtAuthData authData = new JwtAuthData(getTestUser().getLogin(), getTestUser().getPass());
 
         String token = given().contentType(ContentType.JSON)
                 .body(authData)
-                .post("http://85.192.34.140:8080/api/login")
+                .post("/login")
                 .then().log().all()
                 .statusCode(200)
                 .extract().jsonPath().getString("token");
         Assertions.assertNotNull(token);
 
         Info info = given().contentType(ContentType.JSON)
-                 .auth().oauth2(token)
-                 .body(GameGenerator.generateGameFullData())
-                 .post("http://85.192.34.140:8080/api/user/games")
-                 .then().log().all()
-                 .statusCode(201)
-                 .extract().jsonPath().getObject("info", Info.class);
+                .auth().oauth2(token)
+                .body(GameGenerator.generateGameFullData())
+                .post("/user/games")
+                .then().log().all()
+                .statusCode(201)
+                .extract().jsonPath().getObject("info", Info.class);
 
         Assertions.assertEquals("success", info.getStatus()) ;
         Assertions.assertEquals("Game created", info.getMessage()) ;
@@ -65,67 +81,54 @@ public class GameTests {
     }
     @Test
     public void getGames(){
-        Random random = new Random();
-        int randomNamber = Math.abs(random.nextInt());
 
-         UserRoot user = UserRoot.builder()
-                .login("deeerr" + randomNamber)
-                .pass("23ededasdas")
-                .build();
-
-         given().contentType(ContentType.JSON)
-                .body(user)
-                .post("http://85.192.34.140:8080/api/signup")
+        given().contentType(ContentType.JSON)
+                .body(getTestUser())
+                .post("/signup")
                 .then().log().all()
                 .statusCode(201);
 
-         JwtAuthData authData = new JwtAuthData(user.getLogin(), user.getPass());
+        JwtAuthData authData = new JwtAuthData(getTestUser().getLogin(), getTestUser().getPass());
 
-         String token = given().contentType(ContentType.JSON)
+        String token = given().contentType(ContentType.JSON)
                 .body(authData)
-                .post("http://85.192.34.140:8080/api/login")
+                .post("/login")
                 .then().log().all()
                 .statusCode(200)
                 .extract().jsonPath().getString("token");
-         Assertions.assertNotNull(token);
+        Assertions.assertNotNull(token);
 
-         given().contentType(ContentType.JSON)
+        given().contentType(ContentType.JSON)
                 .auth().oauth2(token)
                 .body(GameGenerator.generateGameFullData())
-                .post("http://85.192.34.140:8080/api/user/games")
+                .post("/user/games")
                 .then().log().all()
                 .statusCode(201);
 
-         int statusCode = given().contentType(ContentType.JSON)
+        int statusCode = given().contentType(ContentType.JSON)
                 .auth().oauth2(token)
-                .get("http://85.192.34.140:8080/api/user/games")
+                .get("/user/games")
                 .then().log().all()
                 .extract().statusCode();
-         Assertions.assertEquals(200, statusCode);
+        Assertions.assertEquals(200, statusCode);
 
 
     }
     @Test
     public void getGamesFromID(){
-        Random random = new Random();
-        int randomNamber = Math.abs(random.nextInt());
 
-        UserRoot user = UserRoot.builder()
-                .login("deeerr" + randomNamber)
-                .pass("23ededasdas")
-                .build();
 
         given().contentType(ContentType.JSON)
-                .body(user)
-                .post("http://85.192.34.140:8080/api/signup")
+                .body(getTestUser())
+                .post("/signup")
                 .then().log().all()
                 .statusCode(201);
 
-        JwtAuthData authData = new JwtAuthData(user.getLogin(), user.getPass());
+        JwtAuthData authData = new JwtAuthData(getTestUser().getLogin(), getTestUser().getPass());
 
         String token = given().contentType(ContentType.JSON)
                 .body(authData)
-                .post("http://85.192.34.140:8080/api/login")
+                .post("/login")
                 .then().log().all()
                 .statusCode(200)
                 .extract().jsonPath().getString("token");
@@ -133,40 +136,34 @@ public class GameTests {
         GamesRoot response = given().contentType(ContentType.JSON)
                 .auth().oauth2(token)
                 .body(GameGenerator.generateGameFullData())
-                .post("http://85.192.34.140:8080/api/user/games")
+                .post("/user/games")
                 .then().log().all()
                 .extract().response().jsonPath().getObject("register_data", GamesRoot.class);
 
-       int statusCode = given().contentType(ContentType.JSON)
+        int statusCode = given().contentType(ContentType.JSON)
                 .auth().oauth2(token)
-                .get("http://85.192.34.140:8080/api/user/games/"+response.getGameId())
+                .get("/user/games/"+response.getGameId())
                 .then().log().all()
                 .extract().statusCode();
         Assertions.assertEquals(200, statusCode);
 
     }
-@Test
+    @Test
     public void updateGameDlcInfo(){
 
-        Random random = new Random();
-        int randomNamber = Math.abs(random.nextInt());
 
-        UserRoot user = UserRoot.builder()
-                .login("deeerr" + randomNamber)
-                .pass("23ededasdas")
-                .build();
 
         given().contentType(ContentType.JSON)
-                .body(user)
-                .post("http://85.192.34.140:8080/api/signup")
+                .body(getTestUser())
+                .post("/signup")
                 .then().log().all()
                 .statusCode(201);
 
-        JwtAuthData authData = new JwtAuthData(user.getLogin(), user.getPass());
+        JwtAuthData authData = new JwtAuthData(getTestUser().getLogin(), getTestUser().getPass());
 
         String token = given().contentType(ContentType.JSON)
                 .body(authData)
-                .post("http://85.192.34.140:8080/api/login")
+                .post("/login")
                 .then().log().all()
                 .statusCode(200)
                 .extract().jsonPath().getString("token");
@@ -174,22 +171,22 @@ public class GameTests {
         GamesRoot response = given().contentType(ContentType.JSON)
                 .auth().oauth2(token)
                 .body(GameGenerator.generateGameFullData())
-                .post("http://85.192.34.140:8080/api/user/games")
+                .post("/user/games")
                 .then().log().all()
                 .extract().response().jsonPath().getObject("register_data", GamesRoot.class);
 
         SimilarDlc similarDlc = SimilarDlc.builder()
-            .dlcNameFromAnotherGame(faker.funnyName().name())
-            .isFree(true)
-            .build();
+                .dlcNameFromAnotherGame(faker.funnyName().name())
+                .isFree(true)
+                .build();
 
         DlcsItem dlcsItem = DlcsItem.builder()
-            .dlcName("Gdsfsdf"+randomNamber)
-            .isDlcFree(false)
-            .similarDlc(similarDlc)
-            .price(1223)
-            .description(faker.name().name())
-            .build();
+                .dlcName("Gdsfsdf"+randomNamber)
+                .isDlcFree(false)
+                .similarDlc(similarDlc)
+                .price(1223)
+                .description(faker.name().name())
+                .build();
 
         List<DlcsItem> getNewDlc = new ArrayList<>();
         getNewDlc.add(dlcsItem);
@@ -197,9 +194,9 @@ public class GameTests {
         Info info = given().contentType(ContentType.JSON)
                 .auth().oauth2(token)
                 .body(getNewDlc)
-                .put("http://85.192.34.140:8080/api/user/games/"+response.getGameId())
+                .put("/user/games/"+response.getGameId())
                 .then().log().all()
-               .extract().jsonPath().getObject("info", Info.class);
+                .extract().jsonPath().getObject("info", Info.class);
 
         Assertions.assertEquals("success", info.getStatus()) ;
         Assertions.assertEquals("DlC successfully changed", info.getMessage()) ;;
@@ -208,25 +205,19 @@ public class GameTests {
     @Test
     public void deleteDlc(){
 
-        Random random = new Random();
-        int randomNamber = Math.abs(random.nextInt());
-
-        UserRoot user = UserRoot.builder()
-                .login("deeerr" + randomNamber)
-                .pass("23ededasdas")
-                .build();
+        ;
 
         given().contentType(ContentType.JSON)
-                .body(user)
-                .post("http://85.192.34.140:8080/api/signup")
+                .body(getTestUser())
+                .post("/signup")
                 .then().log().all()
                 .statusCode(201);
 
-        JwtAuthData authData = new JwtAuthData(user.getLogin(), user.getPass());
+        JwtAuthData authData = new JwtAuthData(getTestUser().getLogin(), getTestUser().getPass());
 
         String token = given().contentType(ContentType.JSON)
                 .body(authData)
-                .post("http://85.192.34.140:8080/api/login")
+                .post("/login")
                 .then().log().all()
                 .statusCode(200)
                 .extract().jsonPath().getString("token");
@@ -234,14 +225,14 @@ public class GameTests {
         GamesRoot response = given().contentType(ContentType.JSON)
                 .auth().oauth2(token)
                 .body(GameGenerator.generateGameFullData())
-                .post("http://85.192.34.140:8080/api/user/games")
+                .post("/user/games")
                 .then().log().all()
                 .extract().response().jsonPath().getObject("register_data", GamesRoot.class);
 
         Info info = given().contentType(ContentType.JSON)
                 .auth().oauth2(token)
                 .body(GameGenerator.generateGameFullData().getDlcs())
-                .delete("http://85.192.34.140:8080/api/user/games/"+response.getGameId()+"/dlc")
+                .delete("/user/games/"+response.getGameId()+"/dlc")
                 .then().log().all()
                 .extract().jsonPath().getObject("info", Info.class);
 
@@ -251,25 +242,19 @@ public class GameTests {
     }
     @Test
     public void deleteGame (){
-        Random random = new Random();
-        int randomNamber = Math.abs(random.nextInt());
-
-        UserRoot user = UserRoot.builder()
-                .login("deeerr" + randomNamber)
-                .pass("23ededasdas")
-                .build();
+    ;
 
         given().contentType(ContentType.JSON)
-                .body(user)
-                .post("http://85.192.34.140:8080/api/signup")
+                .body(getTestUser())
+                .post("/signup")
                 .then().log().all()
                 .statusCode(201);
 
-        JwtAuthData authData = new JwtAuthData(user.getLogin(), user.getPass());
+        JwtAuthData authData = new JwtAuthData(getTestUser().getLogin(), getTestUser().getPass());
 
         String token = given().contentType(ContentType.JSON)
                 .body(authData)
-                .post("http://85.192.34.140:8080/api/login")
+                .post("/login")
                 .then().log().all()
                 .statusCode(200)
                 .extract().jsonPath().getString("token");
@@ -277,25 +262,20 @@ public class GameTests {
         GamesRoot response = given().contentType(ContentType.JSON)
                 .auth().oauth2(token)
                 .body(GameGenerator.generateGameFullData())
-                .post("http://85.192.34.140:8080/api/user/games")
+                .post("/user/games")
                 .then().log().all()
                 .extract().response().jsonPath().getObject("register_data", GamesRoot.class);
 
         Info info = given().contentType(ContentType.JSON)
                 .auth().oauth2(token)
                 .body(response.getGameId())
-                .delete("http://85.192.34.140:8080/api/user/games/"+response.getGameId())
+                .delete("/user/games/"+response.getGameId())
                 .then().log().all()
                 .extract().jsonPath().getObject("info", Info.class);
 
         Assertions.assertEquals("success", info.getStatus()) ;
         Assertions.assertEquals("Game successfully deleted", info.getMessage()) ;;
 
-}
+    }
 
 }
-
-
-
-
-

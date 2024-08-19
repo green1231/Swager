@@ -1,17 +1,12 @@
 package tests;
-
 import io.restassured.http.ContentType;
-
-
 import io.restassured.response.Response;
 import models.cars.ResponseItem;
+import models.keys.NumbersPow;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
 import java.util.List;
-
 import static io.restassured.RestAssured.given;
-
 public class ResponseTrainTests {
 
 
@@ -50,10 +45,7 @@ public class ResponseTrainTests {
 
         Assertions.assertEquals(carsCount, 58);
 
-
     }
-
-
 
     @Test
     public void getVersionAPI(){
@@ -68,7 +60,6 @@ public class ResponseTrainTests {
         System.out.println(versionAPI);
 
     }
-
 
 @Test
     public void redirectsSpecificAddressReturnsStatusCode301(){
@@ -92,10 +83,13 @@ public class ResponseTrainTests {
 @Test
     public void getVariationsKeyForTrainingRetrievingResponses(){
 
-        given().contentType(ContentType.JSON)
+    NumbersPow numbersPow = given().contentType(ContentType.JSON)
                 .get("http://85.192.34.140:8080/api/easy/nums")
                 .then().log().all()
-                .statusCode(200);
+                .extract().response().jsonPath().getObject("numbersPow.nums", NumbersPow.class);
+    System.out.println(numbersPow);
+
+
 
 
 }

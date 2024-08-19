@@ -1,209 +1,161 @@
 package tests;
 
+import io.restassured.RestAssured;
+import io.restassured.filter.log.RequestLoggingFilter;
+import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
+import io.restassured.response.ValidatableResponse;
 import models.users.Info;
 import models.users.JwtAuthData;
 import models.users.UserRoot;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import static io.restassured.RestAssured.baseURI;
 import static io.restassured.RestAssured.given;
 
 public class UserTests {
 
-    private static Random random = new Random();
+    private Random random = new Random();
 
-    @Test  // В логах указанно это - "games": []?
-
-
-    public void positiveRegistration(){
-        Random random = new Random();
+    private UserRoot getTestUser() {
         int randomNamber = Math.abs(random.nextInt());
-
-
-        UserRoot user = UserRoot.builder()
+        return UserRoot.builder()
                 .login("deeerr" + randomNamber)
                 .pass("23ededasdas")
                 .build();
+    }
 
+    @BeforeAll
+    static void setUp() {
 
-       Info info = given().contentType(ContentType.JSON)
+        RestAssured.baseURI = "http://85.192.34.140:8080/api";
+        RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
+    }
+
+    private String getToken(String login, String password) {
+
+        JwtAuthData authData = new JwtAuthData(login, password);
+
+        return given().contentType(ContentType.JSON)
+                .body(authData)
+                .post("/login")
+                .then()
+                .extract().jsonPath().getString("token");
+
+    }
+
+    private ValidatableResponse regUser(UserRoot user) {
+
+        return given().contentType(ContentType.JSON)
                 .body(user)
-                .post("http://85.192.34.140:8080/api/signup")
-                .then().log().all()
+                .post("/signup")
+                .then();
+
+    }
+
+    @Test
+    public void positiveRegistration() {
+        UserRoot user = getTestUser();
+
+        Info info = regUser(user)
                 .statusCode(201)
                 .extract()
                 .jsonPath().getObject("info", Info.class);
 
         Assertions.assertEquals("success", info.getStatus());
         Assertions.assertEquals("User created", info.getMessage());
-        ;
 
     }
-@Test
-    public void positiveAdminAuth(){
 
-    JwtAuthData authData = new JwtAuthData("admin", "admin");
-
-    String token = given().contentType(ContentType.JSON)
-            .body(authData)
-            .post("http://85.192.34.140:8080/api/login")
-            .then().log().all()
-            .statusCode(200)
-            .extract().jsonPath().getString("token");
-  Assertions.assertNotNull(token);
-
-    }
     @Test
-    public void positiveNewUserAuth(){
-        Random random = new Random();
-        int randomNamber = Math.abs(random.nextInt());
+    public void positiveAdminAuth() {
 
-        UserRoot user = UserRoot.builder()
-                .login("deeerr" + randomNamber)
-                .pass("23ededasdas")
-                .build();
+        String token = getToken("admin", "admin");
+        Assertions.assertNotNull(token);
 
-        given().contentType(ContentType.JSON)
-                .body(user)
-                .post("http://85.192.34.140:8080/api/signup")
-                .then().log().all()
-                .statusCode(201)
-                .extract()
-                .jsonPath().getObject("info", Info.class);
+    }
 
-        JwtAuthData authData = new JwtAuthData(user.getLogin(), user.getPass());
+    @Test
+    public void positiveNewUserAuth() {
 
-        String token = given().contentType(ContentType.JSON)
-                .body(authData)
-                .post("http://85.192.34.140:8080/api/login")
-                .then().log().all()
-                .statusCode(200)
-                .extract().jsonPath().getString("token");
+        UserRoot user = getTestUser();
+
+        regUser(user)
+                .statusCode(201);
+
+        String token = getToken(user.getLogin(), user.getPass());
         Assertions.assertNotNull(token);
     }
+
     @Test
-    public void positiveGetUserInfo(){
+    public void positiveGetUserInfo() {
 
-        Random random = new Random();
-        int randomNamber = Math.abs(random.nextInt());
+        UserRoot user = getTestUser();
 
-        UserRoot user = UserRoot.builder()
-                .login("deeerr" + randomNamber)
-                .pass("23ededasdas")
-                .build();
+        regUser(user)
+                .statusCode(201);
 
-        given().contentType(ContentType.JSON)
-                .body(user)
-                .post("http://85.192.34.140:8080/api/signup")
-                .then().log().all()
-                .statusCode(201)
-                .extract()
-                .jsonPath().getObject("info", Info.class);
-
-        JwtAuthData authData = new JwtAuthData(user.getLogin(), user.getPass());
-
-        String token = given().contentType(ContentType.JSON)
-                .body(authData)
-                .post("http://85.192.34.140:8080/api/login")
-                .then().log().all()
-                .statusCode(200)
-                .extract().jsonPath().getString("token");
+        String token = getToken(user.getLogin(), user.getPass());
 
         UserRoot response = given().auth().oauth2(token)
-                .get("http://85.192.34.140:8080/api/user")
-                .then().log().all()
+                .get("/user")
+                .then()
                 .statusCode(200)
                 .extract().body().as(UserRoot.class);
         Assertions.assertEquals(user.getLogin(), response.getLogin());
         Assertions.assertEquals(user.getPass(), response.getPass());
 
-}
+    }
 
-@Test
-    public void  updatingUserPassword(){
+    @Test
+    public void updatingUserPassword() {
 
-    //Random random = new Random();
-    int randomNamber = Math.abs(random.nextInt());
+        UserRoot user = getTestUser();
 
-    UserRoot user = UserRoot.builder()
-            .login("deeerr" + randomNamber)
-            .pass("23ededasdas")
-            .build();
+        regUser(user)
+                .statusCode(201);
 
-    given().contentType(ContentType.JSON)
-            .body(user)
-            .post("http://85.192.34.140:8080/api/signup")
-            .then().log().all()
-            .statusCode(201);
+        String token = getToken(user.getLogin(), user.getPass());
 
-    JwtAuthData authData = new JwtAuthData(user.getLogin(), user.getPass());
+        Map<String, String> password = new HashMap<>();
+        password.put("password", "234234234");
 
-    String token = given().contentType(ContentType.JSON)
-            .body(authData)
-            .post("http://85.192.34.140:8080/api/login")
-            .then().log().all()
-            .statusCode(200)
-            .extract().jsonPath().getString("token");
-
-
-    Map<String,String> password = new HashMap<>();
-    password.put("password", "234234234");
-
-   Info info =  given().contentType(ContentType.JSON)
-            .auth().oauth2(token)
-            .body(password)
-            .put("http://85.192.34.140:8080/api/user")
-            .then().log().all()
-            .statusCode(200)
-           .extract().jsonPath().getObject("info", Info.class);
-   Assertions.assertEquals("success", info.getStatus());
-   Assertions.assertEquals("User password successfully changed", info.getMessage());
+        Info info = given().contentType(ContentType.JSON)
+                .auth().oauth2(token)
+                .body(password)
+                .put("/user")
+                .then()
+                .statusCode(200)
+                .extract().jsonPath().getObject("info", Info.class);
+        Assertions.assertEquals("success", info.getStatus());
+        Assertions.assertEquals("User password successfully changed", info.getMessage());
 
     }
 
+    @Test
+    public void deletUser() {
 
+        UserRoot user = getTestUser();
 
-@Test
-    public void deletUser(){
+        regUser(user)
+                .statusCode(201);
 
-        Random random = new Random();
-        int randomNamber = Math.abs(random.nextInt());
+        String token = getToken(user.getLogin(), user.getPass());
 
-        UserRoot user = UserRoot.builder()
-                .login("deeerr" + randomNamber)
-                .pass("23ededasdas")
-                .build();
-
-        given().contentType(ContentType.JSON)
-                .body(user)
-                .post("http://85.192.34.140:8080/api/signup")
-                .then().log().all()
-                .statusCode(201)
-                .extract()
-                .jsonPath().getObject("info", Info.class);
-
-        JwtAuthData authData = new JwtAuthData(user.getLogin(), user.getPass());
-
-        String token = given().contentType(ContentType.JSON)
-                .body(authData)
-                .post("http://85.192.34.140:8080/api/login")
-                .then().log().all()
+        Info info = given().auth().oauth2(token)
+                .delete("/user")
+                .then()
                 .statusCode(200)
-                .extract().jsonPath().getString("token");
+                .extract().jsonPath().getObject("info", Info.class);
 
-       Info info = given().auth().oauth2(token)
-                .delete("http://85.192.34.140:8080/api/user")
-                .then().log().all()
-                .statusCode(200)
-               .extract().jsonPath().getObject("info", Info.class);
-
-       Assertions.assertEquals("success", info.getStatus());
-       Assertions.assertEquals("User successfully deleted", info.getMessage());
+        Assertions.assertEquals("success", info.getStatus());
+        Assertions.assertEquals("User successfully deleted", info.getMessage());
     }
 
 

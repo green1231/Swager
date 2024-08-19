@@ -1,31 +1,25 @@
 package models.keys;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
+
+
+
+@ToString
 public class NumbersPow{
 
-	@JsonProperty("nums")
-	private Nums nums;
+@Getter
+	private final Map<String, Object> filds = new LinkedHashMap<>();
 
-	public void setNums(Nums nums){
-		this.nums = nums;
+	@JsonAnySetter
+	public void put(String key, Object value){
+		filds.put(key, value);
+
 	}
-
-	public Nums getNums(){
-		return nums;
-	}
-
-	@Override
- 	public String toString(){
-		return 
-			"NumbersPow{" + 
-			"nums = '" + nums + '\'' + 
-			"}";
-		}
 }
