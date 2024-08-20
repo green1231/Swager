@@ -31,8 +31,7 @@ import static io.restassured.parsing.Parser.JSON;
 
 public class GameTests {
     private static final Faker faker = new Faker();
-    Random random = new Random();
-    int randomNamber = Math.abs(random.nextInt());
+
 
     @BeforeAll
     static void setUp() {
@@ -42,9 +41,10 @@ public class GameTests {
     }
 
     private UserRoot getTestUser() {
-
+        Random random = new Random();
+        int randomNumber = Math.abs(random.nextInt());
         return UserRoot.builder()
-                .login("deeerr" + randomNamber)
+                .login("deeerr" + randomNumber)
                 .pass("23ededasdas")
                 .build();
     }
@@ -77,13 +77,17 @@ public class GameTests {
     }
 
     private DlcsItem createNewDls() {
+
+        Random random = new Random();
+        int randomNumber = Math.abs(random.nextInt());
+
         SimilarDlc similarDlc = SimilarDlc.builder()
                 .dlcNameFromAnotherGame(faker.funnyName().name())
                 .isFree(true)
                 .build();
 
         return DlcsItem.builder()
-                .dlcName("Gdsfsdf" + randomNamber)
+                .dlcName("Gdsfsdf" + randomNumber)
                 .isDlcFree(false)
                 .similarDlc(similarDlc)
                 .price(1223)
