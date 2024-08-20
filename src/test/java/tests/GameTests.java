@@ -68,7 +68,7 @@ public class GameTests {
                 .extract().jsonPath().getString("token");
     }
 
-    private Response createGame(String token) {
+    private Response addGameToUser(String token) {
 
         return given().contentType(ContentType.JSON)
                 .auth().oauth2(token)
@@ -103,7 +103,7 @@ public class GameTests {
         Assertions.assertNotNull(token);
 
         Info info =
-                createGame(token).then()
+                addGameToUser(token).then()
                         .statusCode(201)
                         .extract().jsonPath().getObject("info", Info.class);
 
@@ -123,7 +123,7 @@ public class GameTests {
                 getToken(user.getLogin(), user.getPass());
         Assertions.assertNotNull(token);
 
-        createGame(token).then()
+        addGameToUser(token).then()
                 .statusCode(201);
 
         int statusCode = given().contentType(ContentType.JSON)
@@ -145,7 +145,7 @@ public class GameTests {
         String token = getToken(user.getLogin(), user.getPass());
         Assertions.assertNotNull(token);
 
-        GamesRoot response = createGame(token).then()
+        GamesRoot response = addGameToUser(token).then()
                 .statusCode(201)
                 .extract().response().jsonPath().getObject("register_data", GamesRoot.class);
 
@@ -168,7 +168,7 @@ public class GameTests {
         String token = getToken(user.getLogin(), user.getPass());
         Assertions.assertNotNull(token);
 
-        GamesRoot response = createGame(token).then()
+        GamesRoot response = addGameToUser(token).then()
                 .statusCode(201)
                 .extract().response().jsonPath().getObject("register_data", GamesRoot.class);
 
@@ -197,7 +197,7 @@ public class GameTests {
         String token = getToken(user.getLogin(), user.getPass());
         Assertions.assertNotNull(token);
 
-        GamesRoot response = createGame(token).then()
+        GamesRoot response = addGameToUser(token).then()
                 .statusCode(201)
                 .extract().response().jsonPath().getObject("register_data", GamesRoot.class);
 
@@ -223,7 +223,7 @@ public class GameTests {
         String token = getToken(user.getLogin(), user.getPass());
         Assertions.assertNotNull(token);
 
-        GamesRoot response = createGame(token).then()
+        GamesRoot response = addGameToUser(token).then()
                 .statusCode(201)
                 .extract().response().jsonPath().getObject("register_data", GamesRoot.class);
 
