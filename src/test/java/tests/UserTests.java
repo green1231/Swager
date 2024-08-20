@@ -47,7 +47,6 @@ public class UserTests {
                 .post("/login")
                 .then()
                 .extract().jsonPath().getString("token");
-
     }
 
     private ValidatableResponse regUser(UserRoot user) {
@@ -56,7 +55,6 @@ public class UserTests {
                 .body(user)
                 .post("/signup")
                 .then();
-
     }
 
     @Test
@@ -70,7 +68,6 @@ public class UserTests {
 
         Assertions.assertEquals("success", info.getStatus());
         Assertions.assertEquals("User created", info.getMessage());
-
     }
 
     @Test

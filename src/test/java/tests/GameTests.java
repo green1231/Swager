@@ -68,7 +68,7 @@ public class GameTests {
                 .extract().jsonPath().getString("token");
     }
 
-    private Response getAddGame(String token) {
+    private Response createGame(String token) {
 
         return given().contentType(ContentType.JSON)
                 .auth().oauth2(token)
@@ -77,7 +77,7 @@ public class GameTests {
     }
 
     private DlcsItem createNewDls() {
-         SimilarDlc similarDlc = SimilarDlc.builder()
+        SimilarDlc similarDlc = SimilarDlc.builder()
                 .dlcNameFromAnotherGame(faker.funnyName().name())
                 .isFree(true)
                 .build();
@@ -89,8 +89,6 @@ public class GameTests {
                 .price(1223)
                 .description(faker.name().name())
                 .build();
-
-
     }
 
     @Test
@@ -105,13 +103,12 @@ public class GameTests {
         Assertions.assertNotNull(token);
 
         Info info =
-                getAddGame(token).then()
+                createGame(token).then()
                         .statusCode(201)
                         .extract().jsonPath().getObject("info", Info.class);
 
         Assertions.assertEquals("success", info.getStatus());
         Assertions.assertEquals("Game created", info.getMessage());
-
     }
 
     @Test
@@ -126,7 +123,7 @@ public class GameTests {
                 getToken(user.getLogin(), user.getPass());
         Assertions.assertNotNull(token);
 
-        getAddGame(token).then()
+        createGame(token).then()
                 .statusCode(201);
 
         int statusCode = given().contentType(ContentType.JSON)
@@ -135,7 +132,6 @@ public class GameTests {
                 .then().log().all()
                 .extract().statusCode();
         Assertions.assertEquals(200, statusCode);
-
     }
 
     @Test
@@ -149,7 +145,7 @@ public class GameTests {
         String token = getToken(user.getLogin(), user.getPass());
         Assertions.assertNotNull(token);
 
-        GamesRoot response = getAddGame(token).then()
+        GamesRoot response = createGame(token).then()
                 .statusCode(201)
                 .extract().response().jsonPath().getObject("register_data", GamesRoot.class);
 
@@ -159,7 +155,6 @@ public class GameTests {
                 .then().log().all()
                 .extract().statusCode();
         Assertions.assertEquals(200, statusCode);
-
     }
 
     @Test
@@ -173,7 +168,7 @@ public class GameTests {
         String token = getToken(user.getLogin(), user.getPass());
         Assertions.assertNotNull(token);
 
-        GamesRoot response = getAddGame(token).then()
+        GamesRoot response = createGame(token).then()
                 .statusCode(201)
                 .extract().response().jsonPath().getObject("register_data", GamesRoot.class);
 
@@ -189,7 +184,6 @@ public class GameTests {
 
         Assertions.assertEquals("success", info.getStatus());
         Assertions.assertEquals("DlC successfully changed", info.getMessage());
-
     }
 
     @Test
@@ -203,7 +197,7 @@ public class GameTests {
         String token = getToken(user.getLogin(), user.getPass());
         Assertions.assertNotNull(token);
 
-        GamesRoot response = getAddGame(token).then()
+        GamesRoot response = createGame(token).then()
                 .statusCode(201)
                 .extract().response().jsonPath().getObject("register_data", GamesRoot.class);
 
@@ -216,13 +210,10 @@ public class GameTests {
 
         Assertions.assertEquals("success", info.getStatus());
         Assertions.assertEquals("Game DLC successfully deleted", info.getMessage());
-        ;
-
     }
 
     @Test
     public void deleteGame() {
-        ;
 
         UserRoot user = getTestUser();
 
@@ -232,7 +223,7 @@ public class GameTests {
         String token = getToken(user.getLogin(), user.getPass());
         Assertions.assertNotNull(token);
 
-        GamesRoot response = getAddGame(token).then()
+        GamesRoot response = createGame(token).then()
                 .statusCode(201)
                 .extract().response().jsonPath().getObject("register_data", GamesRoot.class);
 
@@ -245,8 +236,6 @@ public class GameTests {
 
         Assertions.assertEquals("success", info.getStatus());
         Assertions.assertEquals("Game successfully deleted", info.getMessage());
-        ;
-
     }
 
 }
