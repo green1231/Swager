@@ -154,8 +154,10 @@ public class GameTests {
                 .extract().response().jsonPath().getObject("register_data", GamesRoot.class);
 
         int statusCode = given().contentType(ContentType.JSON)
+
                 .auth().oauth2(token)
-                .get("/user/games/" + response.getGameId())
+                .pathParam("id", response.getGameId())
+                .get("/user/games/{id}")
                 .then().log().all()
                 .extract().statusCode();
         Assertions.assertEquals(200, statusCode);
@@ -182,7 +184,8 @@ public class GameTests {
         Info info = given().contentType(ContentType.JSON)
                 .auth().oauth2(token)
                 .body(getNewDlc)
-                .put("/user/games/" + response.getGameId())
+                .pathParam("id", response.getGameId())
+                .put("/user/games/{id}")
                 .then().log().all()
                 .extract().jsonPath().getObject("info", Info.class);
 
@@ -208,7 +211,8 @@ public class GameTests {
         Info info = given().contentType(ContentType.JSON)
                 .auth().oauth2(token)
                 .body(GameGenerator.generateGameFullData().getDlcs())
-                .delete("/user/games/" + response.getGameId() + "/dlc")
+                .pathParam("id", response.getGameId())
+                .delete("/user/games/{id}/dlc")
                 .then().log().all()
                 .extract().jsonPath().getObject("info", Info.class);
 
@@ -234,12 +238,30 @@ public class GameTests {
         Info info = given().contentType(ContentType.JSON)
                 .auth().oauth2(token)
                 .body(response.getGameId())
-                .delete("/user/games/" + response.getGameId())
+                .pathParam("id", response.getGameId())
+                .delete("/user/games/{id}")
                 .then().log().all()
                 .extract().jsonPath().getObject("info", Info.class);
 
         Assertions.assertEquals("success", info.getStatus());
         Assertions.assertEquals("Game successfully deleted", info.getMessage());
     }
+
+    @Test
+    public void updateGameField() {
+
+        UserRoot user = getTestUser();
+
+        regUser(user)
+                .statusCode(201);
+
+        String token = getToken(user.getLogin(), user.getPass());
+        Assertions.assertNotNull(token);
+
+        GamesRoot response = addGameToUser(token).then()
+                .statusCode(201)
+                .extract().response().jsonPath().getObject("register_data", GamesRoot.class);
+    }
+
 
 }
