@@ -33,6 +33,7 @@ public class GameTests {
     private static final Faker faker = new Faker();
     Random random = new Random();
     int randomNamber = Math.abs(random.nextInt());
+
     @BeforeAll
     static void setUp() {
 
@@ -48,23 +49,33 @@ public class GameTests {
                 .build();
     }
 
+    private ValidatableResponse regUser(UserRoot user) {
+
+        return given().contentType(ContentType.JSON)
+                .body(user)
+                .post("/signup")
+                .then();
+    }
+    private String getToken(String login, String password) {
+
+        JwtAuthData authData = new JwtAuthData(login, password);
+
+        return given().contentType(ContentType.JSON)
+                .body(authData)
+                .post("/login")
+                .then()
+                .extract().jsonPath().getString("token");
+    }
+
     @Test
     public void addGAme() {
 
-        given().contentType(ContentType.JSON)
-                .body(getTestUser())
-                .post("/signup")
-                .then().log().all()
+        UserRoot user = getTestUser();
+
+        regUser(user)
                 .statusCode(201);
 
-        JwtAuthData authData = new JwtAuthData(getTestUser().getLogin(), getTestUser().getPass());
-
-        String token = given().contentType(ContentType.JSON)
-                .body(authData)
-                .post("/login")
-                .then().log().all()
-                .statusCode(200)
-                .extract().jsonPath().getString("token");
+        String token = getToken(user.getLogin(), user.getPass());
         Assertions.assertNotNull(token);
 
         Info info = given().contentType(ContentType.JSON)
@@ -75,27 +86,20 @@ public class GameTests {
                 .statusCode(201)
                 .extract().jsonPath().getObject("info", Info.class);
 
-        Assertions.assertEquals("success", info.getStatus()) ;
-        Assertions.assertEquals("Game created", info.getMessage()) ;
+        Assertions.assertEquals("success", info.getStatus());
+        Assertions.assertEquals("Game created", info.getMessage());
 
     }
-    @Test
-    public void getGames(){
 
-        given().contentType(ContentType.JSON)
-                .body(getTestUser())
-                .post("/signup")
-                .then().log().all()
+    @Test
+    public void getGames() {
+
+        UserRoot user = getTestUser();
+
+        regUser(user)
                 .statusCode(201);
 
-        JwtAuthData authData = new JwtAuthData(getTestUser().getLogin(), getTestUser().getPass());
-
-        String token = given().contentType(ContentType.JSON)
-                .body(authData)
-                .post("/login")
-                .then().log().all()
-                .statusCode(200)
-                .extract().jsonPath().getString("token");
+        String token = getToken(user.getLogin(), user.getPass());
         Assertions.assertNotNull(token);
 
         given().contentType(ContentType.JSON)
@@ -114,24 +118,18 @@ public class GameTests {
 
 
     }
+
     @Test
-    public void getGamesFromID(){
+    public void getGamesFromID() {
 
 
-        given().contentType(ContentType.JSON)
-                .body(getTestUser())
-                .post("/signup")
-                .then().log().all()
+        UserRoot user = getTestUser();
+
+        regUser(user)
                 .statusCode(201);
 
-        JwtAuthData authData = new JwtAuthData(getTestUser().getLogin(), getTestUser().getPass());
-
-        String token = given().contentType(ContentType.JSON)
-                .body(authData)
-                .post("/login")
-                .then().log().all()
-                .statusCode(200)
-                .extract().jsonPath().getString("token");
+        String token = getToken(user.getLogin(), user.getPass());
+        Assertions.assertNotNull(token);
 
         GamesRoot response = given().contentType(ContentType.JSON)
                 .auth().oauth2(token)
@@ -142,31 +140,24 @@ public class GameTests {
 
         int statusCode = given().contentType(ContentType.JSON)
                 .auth().oauth2(token)
-                .get("/user/games/"+response.getGameId())
+                .get("/user/games/" + response.getGameId())
                 .then().log().all()
                 .extract().statusCode();
         Assertions.assertEquals(200, statusCode);
 
     }
+
     @Test
-    public void updateGameDlcInfo(){
+    public void updateGameDlcInfo() {
 
 
+        UserRoot user = getTestUser();
 
-        given().contentType(ContentType.JSON)
-                .body(getTestUser())
-                .post("/signup")
-                .then().log().all()
+        regUser(user)
                 .statusCode(201);
 
-        JwtAuthData authData = new JwtAuthData(getTestUser().getLogin(), getTestUser().getPass());
-
-        String token = given().contentType(ContentType.JSON)
-                .body(authData)
-                .post("/login")
-                .then().log().all()
-                .statusCode(200)
-                .extract().jsonPath().getString("token");
+        String token = getToken(user.getLogin(), user.getPass());
+        Assertions.assertNotNull(token);
 
         GamesRoot response = given().contentType(ContentType.JSON)
                 .auth().oauth2(token)
@@ -181,7 +172,7 @@ public class GameTests {
                 .build();
 
         DlcsItem dlcsItem = DlcsItem.builder()
-                .dlcName("Gdsfsdf"+randomNamber)
+                .dlcName("Gdsfsdf" + randomNamber)
                 .isDlcFree(false)
                 .similarDlc(similarDlc)
                 .price(1223)
@@ -194,33 +185,28 @@ public class GameTests {
         Info info = given().contentType(ContentType.JSON)
                 .auth().oauth2(token)
                 .body(getNewDlc)
-                .put("/user/games/"+response.getGameId())
+                .put("/user/games/" + response.getGameId())
                 .then().log().all()
                 .extract().jsonPath().getObject("info", Info.class);
 
-        Assertions.assertEquals("success", info.getStatus()) ;
-        Assertions.assertEquals("DlC successfully changed", info.getMessage()) ;;
+        Assertions.assertEquals("success", info.getStatus());
+        Assertions.assertEquals("DlC successfully changed", info.getMessage());
+        ;
 
     }
+
     @Test
-    public void deleteDlc(){
+    public void deleteDlc() {
 
         ;
 
-        given().contentType(ContentType.JSON)
-                .body(getTestUser())
-                .post("/signup")
-                .then().log().all()
+        UserRoot user = getTestUser();
+
+        regUser(user)
                 .statusCode(201);
 
-        JwtAuthData authData = new JwtAuthData(getTestUser().getLogin(), getTestUser().getPass());
-
-        String token = given().contentType(ContentType.JSON)
-                .body(authData)
-                .post("/login")
-                .then().log().all()
-                .statusCode(200)
-                .extract().jsonPath().getString("token");
+        String token = getToken(user.getLogin(), user.getPass());
+        Assertions.assertNotNull(token);
 
         GamesRoot response = given().contentType(ContentType.JSON)
                 .auth().oauth2(token)
@@ -232,32 +218,27 @@ public class GameTests {
         Info info = given().contentType(ContentType.JSON)
                 .auth().oauth2(token)
                 .body(GameGenerator.generateGameFullData().getDlcs())
-                .delete("/user/games/"+response.getGameId()+"/dlc")
+                .delete("/user/games/" + response.getGameId() + "/dlc")
                 .then().log().all()
                 .extract().jsonPath().getObject("info", Info.class);
 
-        Assertions.assertEquals("success", info.getStatus()) ;
-        Assertions.assertEquals("Game DLC successfully deleted", info.getMessage()) ;;
+        Assertions.assertEquals("success", info.getStatus());
+        Assertions.assertEquals("Game DLC successfully deleted", info.getMessage());
+        ;
 
     }
-    @Test
-    public void deleteGame (){
-    ;
 
-        given().contentType(ContentType.JSON)
-                .body(getTestUser())
-                .post("/signup")
-                .then().log().all()
+    @Test
+    public void deleteGame() {
+        ;
+
+        UserRoot user = getTestUser();
+
+        regUser(user)
                 .statusCode(201);
 
-        JwtAuthData authData = new JwtAuthData(getTestUser().getLogin(), getTestUser().getPass());
-
-        String token = given().contentType(ContentType.JSON)
-                .body(authData)
-                .post("/login")
-                .then().log().all()
-                .statusCode(200)
-                .extract().jsonPath().getString("token");
+        String token = getToken(user.getLogin(), user.getPass());
+        Assertions.assertNotNull(token);
 
         GamesRoot response = given().contentType(ContentType.JSON)
                 .auth().oauth2(token)
@@ -269,12 +250,13 @@ public class GameTests {
         Info info = given().contentType(ContentType.JSON)
                 .auth().oauth2(token)
                 .body(response.getGameId())
-                .delete("/user/games/"+response.getGameId())
+                .delete("/user/games/" + response.getGameId())
                 .then().log().all()
                 .extract().jsonPath().getObject("info", Info.class);
 
-        Assertions.assertEquals("success", info.getStatus()) ;
-        Assertions.assertEquals("Game successfully deleted", info.getMessage()) ;;
+        Assertions.assertEquals("success", info.getStatus());
+        Assertions.assertEquals("Game successfully deleted", info.getMessage());
+        ;
 
     }
 
