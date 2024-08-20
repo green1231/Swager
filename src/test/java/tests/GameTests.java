@@ -56,6 +56,7 @@ public class GameTests {
                 .post("/signup")
                 .then();
     }
+
     private String getToken(String login, String password) {
 
         JwtAuthData authData = new JwtAuthData(login, password);
@@ -65,6 +66,31 @@ public class GameTests {
                 .post("/login")
                 .then()
                 .extract().jsonPath().getString("token");
+    }
+
+    private Response getAddGame(String token) {
+
+        return given().contentType(ContentType.JSON)
+                .auth().oauth2(token)
+                .body(GameGenerator.generateGameFullData())
+                .post("/user/games");
+    }
+
+    private DlcsItem createNewDls() {
+         SimilarDlc similarDlc = SimilarDlc.builder()
+                .dlcNameFromAnotherGame(faker.funnyName().name())
+                .isFree(true)
+                .build();
+
+        return DlcsItem.builder()
+                .dlcName("Gdsfsdf" + randomNamber)
+                .isDlcFree(false)
+                .similarDlc(similarDlc)
+                .price(1223)
+                .description(faker.name().name())
+                .build();
+
+
     }
 
     @Test
@@ -78,13 +104,10 @@ public class GameTests {
         String token = getToken(user.getLogin(), user.getPass());
         Assertions.assertNotNull(token);
 
-        Info info = given().contentType(ContentType.JSON)
-                .auth().oauth2(token)
-                .body(GameGenerator.generateGameFullData())
-                .post("/user/games")
-                .then().log().all()
-                .statusCode(201)
-                .extract().jsonPath().getObject("info", Info.class);
+        Info info =
+                getAddGame(token).then()
+                        .statusCode(201)
+                        .extract().jsonPath().getObject("info", Info.class);
 
         Assertions.assertEquals("success", info.getStatus());
         Assertions.assertEquals("Game created", info.getMessage());
@@ -99,14 +122,11 @@ public class GameTests {
         regUser(user)
                 .statusCode(201);
 
-        String token = getToken(user.getLogin(), user.getPass());
+        String token =
+                getToken(user.getLogin(), user.getPass());
         Assertions.assertNotNull(token);
 
-        given().contentType(ContentType.JSON)
-                .auth().oauth2(token)
-                .body(GameGenerator.generateGameFullData())
-                .post("/user/games")
-                .then().log().all()
+        getAddGame(token).then()
                 .statusCode(201);
 
         int statusCode = given().contentType(ContentType.JSON)
@@ -116,12 +136,10 @@ public class GameTests {
                 .extract().statusCode();
         Assertions.assertEquals(200, statusCode);
 
-
     }
 
     @Test
     public void getGamesFromID() {
-
 
         UserRoot user = getTestUser();
 
@@ -131,11 +149,8 @@ public class GameTests {
         String token = getToken(user.getLogin(), user.getPass());
         Assertions.assertNotNull(token);
 
-        GamesRoot response = given().contentType(ContentType.JSON)
-                .auth().oauth2(token)
-                .body(GameGenerator.generateGameFullData())
-                .post("/user/games")
-                .then().log().all()
+        GamesRoot response = getAddGame(token).then()
+                .statusCode(201)
                 .extract().response().jsonPath().getObject("register_data", GamesRoot.class);
 
         int statusCode = given().contentType(ContentType.JSON)
@@ -150,7 +165,6 @@ public class GameTests {
     @Test
     public void updateGameDlcInfo() {
 
-
         UserRoot user = getTestUser();
 
         regUser(user)
@@ -159,28 +173,12 @@ public class GameTests {
         String token = getToken(user.getLogin(), user.getPass());
         Assertions.assertNotNull(token);
 
-        GamesRoot response = given().contentType(ContentType.JSON)
-                .auth().oauth2(token)
-                .body(GameGenerator.generateGameFullData())
-                .post("/user/games")
-                .then().log().all()
+        GamesRoot response = getAddGame(token).then()
+                .statusCode(201)
                 .extract().response().jsonPath().getObject("register_data", GamesRoot.class);
 
-        SimilarDlc similarDlc = SimilarDlc.builder()
-                .dlcNameFromAnotherGame(faker.funnyName().name())
-                .isFree(true)
-                .build();
-
-        DlcsItem dlcsItem = DlcsItem.builder()
-                .dlcName("Gdsfsdf" + randomNamber)
-                .isDlcFree(false)
-                .similarDlc(similarDlc)
-                .price(1223)
-                .description(faker.name().name())
-                .build();
-
         List<DlcsItem> getNewDlc = new ArrayList<>();
-        getNewDlc.add(dlcsItem);
+        getNewDlc.add(createNewDls());
 
         Info info = given().contentType(ContentType.JSON)
                 .auth().oauth2(token)
@@ -191,14 +189,11 @@ public class GameTests {
 
         Assertions.assertEquals("success", info.getStatus());
         Assertions.assertEquals("DlC successfully changed", info.getMessage());
-        ;
 
     }
 
     @Test
     public void deleteDlc() {
-
-        ;
 
         UserRoot user = getTestUser();
 
@@ -208,11 +203,8 @@ public class GameTests {
         String token = getToken(user.getLogin(), user.getPass());
         Assertions.assertNotNull(token);
 
-        GamesRoot response = given().contentType(ContentType.JSON)
-                .auth().oauth2(token)
-                .body(GameGenerator.generateGameFullData())
-                .post("/user/games")
-                .then().log().all()
+        GamesRoot response = getAddGame(token).then()
+                .statusCode(201)
                 .extract().response().jsonPath().getObject("register_data", GamesRoot.class);
 
         Info info = given().contentType(ContentType.JSON)
@@ -240,11 +232,8 @@ public class GameTests {
         String token = getToken(user.getLogin(), user.getPass());
         Assertions.assertNotNull(token);
 
-        GamesRoot response = given().contentType(ContentType.JSON)
-                .auth().oauth2(token)
-                .body(GameGenerator.generateGameFullData())
-                .post("/user/games")
-                .then().log().all()
+        GamesRoot response = getAddGame(token).then()
+                .statusCode(201)
                 .extract().response().jsonPath().getObject("register_data", GamesRoot.class);
 
         Info info = given().contentType(ContentType.JSON)
