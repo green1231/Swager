@@ -11,6 +11,7 @@ import models.users.UserRoot;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import service.UserService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +21,7 @@ import static io.restassured.RestAssured.baseURI;
 import static io.restassured.RestAssured.given;
 
 public class UserTests {
-
+    private static UserService userService;
     private Random random = new Random();
 
     private UserRoot getTestUser() {
@@ -36,6 +37,7 @@ public class UserTests {
 
         RestAssured.baseURI = "http://85.192.34.140:8080/api";
         RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
+        userService = new UserService();
     }
 
     private String getToken(String login, String password) {
@@ -49,11 +51,10 @@ public class UserTests {
                 .extract().jsonPath().getString("token");
     }
 
-    private ValidatableResponse regUser(UserRoot user) {
+    public ValidatableResponse getUser(String token) {
 
-        return given().contentType(ContentType.JSON)
-                .body(user)
-                .post("/signup")
+        return given().auth().oauth2(token)
+                .get("/user")
                 .then();
     }
 
@@ -61,7 +62,7 @@ public class UserTests {
     public void positiveRegistration() {
         UserRoot user = getTestUser();
 
-        Info info = regUser(user)
+        Info info = userService.regUser(user)
                 .statusCode(201)
                 .extract()
                 .jsonPath().getObject("info", Info.class);
@@ -72,8 +73,14 @@ public class UserTests {
 
     @Test
     public void positiveAdminAuth() {
-
-        String token = getToken("admin", "admin");
+        UserRoot user = UserRoot.builder()
+                .login("admin")
+                .pass("admin")
+                .build();
+        String token = userService
+                .auth(user)
+                .extract()
+                .jsonPath().getString("token");
         Assertions.assertNotNull(token);
 
     }
@@ -83,7 +90,7 @@ public class UserTests {
 
         UserRoot user = getTestUser();
 
-        regUser(user)
+        userService.regUser(user)
                 .statusCode(201);
 
         String token = getToken(user.getLogin(), user.getPass());
@@ -95,14 +102,12 @@ public class UserTests {
 
         UserRoot user = getTestUser();
 
-        regUser(user)
+        userService.regUser(user)
                 .statusCode(201);
 
         String token = getToken(user.getLogin(), user.getPass());
 
-        UserRoot response = given().auth().oauth2(token)
-                .get("/user")
-                .then()
+        UserRoot response = getUser(token)
                 .statusCode(200)
                 .extract().body().as(UserRoot.class);
         Assertions.assertEquals(user.getLogin(), response.getLogin());
@@ -115,19 +120,12 @@ public class UserTests {
 
         UserRoot user = getTestUser();
 
-        regUser(user)
+        userService.regUser(user)
                 .statusCode(201);
 
         String token = getToken(user.getLogin(), user.getPass());
 
-        Map<String, String> password = new HashMap<>();
-        password.put("password", "234234234");
-
-        Info info = given().contentType(ContentType.JSON)
-                .auth().oauth2(token)
-                .body(password)
-                .put("/user")
-                .then()
+        Info info = userService.updUserPass(user.getPass(),token)
                 .statusCode(200)
                 .extract().jsonPath().getObject("info", Info.class);
         Assertions.assertEquals("success", info.getStatus());
@@ -140,14 +138,12 @@ public class UserTests {
 
         UserRoot user = getTestUser();
 
-        regUser(user)
+        userService.regUser(user)
                 .statusCode(201);
 
         String token = getToken(user.getLogin(), user.getPass());
 
-        Info info = given().auth().oauth2(token)
-                .delete("/user")
-                .then()
+        Info info = userService.delUser(token)
                 .statusCode(200)
                 .extract().jsonPath().getObject("info", Info.class);
 
