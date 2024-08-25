@@ -2,6 +2,7 @@ package service;
 
 import com.github.javafaker.Faker;
 import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 import models.games.DlcsItem;
 import models.games.GamesRoot;
@@ -113,6 +114,16 @@ public ValidatableResponse udpateDlcInfo(GamesRoot response,String token){
             .put("/user/games/{id}")
             .then();
 }
+    public ValidatableResponse addGameToUser(String token, Object game)
+    {
+        return given()
+                .contentType(ContentType.JSON)
+                .auth()
+                .oauth2(token)
+                .body(game)
+                .post("/user/games").then();
+    }
+
 }
 
 

@@ -60,13 +60,7 @@ public class GameTests {
                 .extract().jsonPath().getString("token");
     }
 
-    private Response addGameToUser(String token) {
 
-        return given().contentType(ContentType.JSON)
-                .auth().oauth2(token)
-                .body(GameGenerator.generateGameFullData())
-                .post("/user/games");
-    }
 
 
 
@@ -82,7 +76,7 @@ public class GameTests {
         Assertions.assertNotNull(token);
 
         Info info =
-                addGameToUser(token).then()
+                gameService.addGameToUser(token,GameGenerator.generateGameFullData())
                         .statusCode(201)
                         .extract().jsonPath().getObject("info", Info.class);
 
@@ -102,7 +96,7 @@ public class GameTests {
                 getToken(user.getLogin(), user.getPass());
         Assertions.assertNotNull(token);
 
-        addGameToUser(token).then()
+        gameService.addGameToUser(token,GameGenerator.generateGameFullData())
                 .statusCode(201);
 
         int statusCode = gameService.getGame(token).log().all()
@@ -121,7 +115,7 @@ public class GameTests {
         String token = getToken(user.getLogin(), user.getPass());
         Assertions.assertNotNull(token);
 
-        GamesRoot response = addGameToUser(token).then()
+        GamesRoot response = gameService.addGameToUser(token,GameGenerator.generateGameFullData())
                 .statusCode(201)
                 .extract().response().jsonPath().getObject("register_data", GamesRoot.class);
 
@@ -141,7 +135,7 @@ public class GameTests {
         String token = getToken(user.getLogin(), user.getPass());
         Assertions.assertNotNull(token);
 
-        GamesRoot response = addGameToUser(token).then()
+        GamesRoot response = gameService.addGameToUser(token,GameGenerator.generateGameFullData())
                 .statusCode(201)
                 .extract().response().jsonPath().getObject("register_data", GamesRoot.class);
 
@@ -164,7 +158,7 @@ public class GameTests {
         String token = getToken(user.getLogin(), user.getPass());
         Assertions.assertNotNull(token);
 
-        GamesRoot response = addGameToUser(token).then()
+        GamesRoot response = gameService.addGameToUser(token,GameGenerator.generateGameFullData())
                 .statusCode(201)
                 .extract().response().jsonPath().getObject("register_data", GamesRoot.class);
 
@@ -186,7 +180,7 @@ public class GameTests {
         String token = getToken(user.getLogin(), user.getPass());
         Assertions.assertNotNull(token);
 
-        GamesRoot response = addGameToUser(token).then()
+        GamesRoot response = gameService.addGameToUser(token,GameGenerator.generateGameFullData())
                 .statusCode(201)
                 .extract().response().jsonPath().getObject("register_data", GamesRoot.class);
 
@@ -208,7 +202,7 @@ public class GameTests {
         String token = getToken(user.getLogin(), user.getPass());
         Assertions.assertNotNull(token);
 
-        GamesRoot response = addGameToUser(token).then()
+        GamesRoot response = gameService.addGameToUser(token,GameGenerator.generateGameFullData())
                 .statusCode(201)
                 .extract().response().jsonPath().getObject("register_data", GamesRoot.class);
 

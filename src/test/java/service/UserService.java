@@ -5,6 +5,7 @@ import io.restassured.response.ValidatableResponse;
 import models.users.Info;
 import models.users.JwtAuthData;
 import models.users.UserRoot;
+import utils.GameGenerator;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -56,6 +57,8 @@ public class UserService {
                 .put("/user")
                 .then();
     }
+
+
 
 
 }

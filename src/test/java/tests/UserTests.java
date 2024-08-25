@@ -51,12 +51,7 @@ public class UserTests {
                 .extract().jsonPath().getString("token");
     }
 
-    public ValidatableResponse getUser(String token) {
 
-        return given().auth().oauth2(token)
-                .get("/user")
-                .then();
-    }
 
     @Test
     public void positiveRegistration() {
@@ -107,7 +102,7 @@ public class UserTests {
 
         String token = getToken(user.getLogin(), user.getPass());
 
-        UserRoot response = getUser(token)
+        UserRoot response = userService.getUser(token)
                 .statusCode(200)
                 .extract().body().as(UserRoot.class);
         Assertions.assertEquals(user.getLogin(), response.getLogin());
