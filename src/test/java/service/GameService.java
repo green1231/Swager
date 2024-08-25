@@ -123,6 +123,12 @@ public ValidatableResponse udpateDlcInfo(GamesRoot response,String token){
                 .body(game)
                 .post("/user/games").then();
     }
+    public ValidatableResponse getToken(JwtAuthData authData) {
+        return given().contentType(ContentType.JSON)
+                .body(authData)
+                .post("/login")
+                .then();
+    }
 
 }
 

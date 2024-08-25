@@ -53,15 +53,9 @@ public class GameTests {
 
         JwtAuthData authData = new JwtAuthData(login, password);
 
-        return given().contentType(ContentType.JSON)
-                .body(authData)
-                .post("/login")
-                .then()
+        return gameService.getToken(authData)
                 .extract().jsonPath().getString("token");
     }
-
-
-
 
 
     @Test

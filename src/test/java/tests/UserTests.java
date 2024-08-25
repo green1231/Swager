@@ -44,11 +44,9 @@ public class UserTests {
 
         JwtAuthData authData = new JwtAuthData(login, password);
 
-        return given().contentType(ContentType.JSON)
-                .body(authData)
-                .post("/login")
-                .then()
+      return userService.getToken(authData)
                 .extract().jsonPath().getString("token");
+
     }
 
 
